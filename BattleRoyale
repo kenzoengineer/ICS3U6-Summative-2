@@ -4,9 +4,9 @@ import java.util.Scanner;
 import java.io.File;
 public class BattleRoyale {
     /**
-     * 
+     * Prints the entire array
      * @param map the 2d array of the map
-     * @param size 
+     * @param size the size of the 2d array
      */
     public static void printA(String[][] map,int size) {
         for (int i = 0; i < size; i++) {
@@ -17,6 +17,12 @@ public class BattleRoyale {
         }
     }
     
+    /**
+     * Helper method to find the location of "P"
+     * @param map the 2d array of the map
+     * @param size the size of the 2d array
+     * @return the x and y coordinates of "P"
+     */
     public static int[] findP(String[][] map, int size) {
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
@@ -29,6 +35,14 @@ public class BattleRoyale {
         return null;
     }
     
+    /**
+     * Shortest distance from the center to "P"
+     * @param map the size of the map
+     * @param x the current x value of the path
+     * @param y the current y value of the path
+     * @param size the size of the array
+     * @return the number of loot tiles collected
+     */
     public static int path(String[][] map, int x, int y, int size) {
         int pX = findP(map,size)[0];
         int pY = findP(map,size)[1];
