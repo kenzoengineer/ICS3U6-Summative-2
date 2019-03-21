@@ -1,0 +1,84 @@
+package battleroyale;
+
+import java.util.Scanner;
+import java.io.File;
+public class BattleRoyale {
+    /**
+     * 
+     * @param map the 2d array of the map
+     * @param size 
+     */
+    public static void printA(String[][] map,int size) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                System.out.print(map[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+    
+    public static int[] findP(String[][] map, int size) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (map[i][j].equals("P")) {
+                    int[] a = {i,j};
+                    return a;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static int path(String[][] map, int x, int y, int size) {
+        int pX = findP(map,size)[0];
+        int pY = findP(map,size)[1];
+        if (map[x][y].equals("P")) {
+            return 0;
+        } else {
+            map[x][y] = "V";
+            if (x > pX) {
+                if (map[x-1][y].equals("1")) {
+                    return 1 + path(map,x-1,y,size);
+                } else {
+                    return path(map,x-1,y,size);
+                }
+            } else if (x < pX) {
+                if (map[x+1][y].equals("1")) {
+                    return 1 + path(map,x+1,y,size);
+                } else {
+                    return path(map,x+1,y,size);
+                }
+            } else if (y > pY) {
+                if (map[x][y-1].equals("1")) {
+                    return 1 + path(map,x,y-1,size);
+                } else {
+                    return path(map,x,y-1,size);
+                }
+            } else {
+                if (map[x][y+1].equals("1")) {
+                    return 1 + path(map,x,y+1,size);
+                } else {
+                    return path(map,x,y+1,size);
+                }
+            }
+        }
+    }
+    
+    public static void main(String[] args) throws Exception{
+        int size = 11;
+        File file = new File("map.txt");
+        Scanner fileIn = new Scanner(file);
+        String[][] map = new String[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                map[i][j] = fileIn.next();
+            }
+        }
+        
+        printA(map, size);
+        System.out.println();
+        System.out.println("The player collected " + path(map, 5, 5, size) + " piece(s) of loot");
+        printA(map, size);
+    }
+    
+}
