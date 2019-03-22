@@ -138,6 +138,12 @@ public class Battle_royale {
         }
     }
     
+    /**
+     * copy helper method for booleans
+     * @param old parent array to be copied
+     * @param size size of the array
+     * @return child, copied array
+     */
     public static boolean[][] copyArrayB(boolean[][] old, int size) {
         boolean[][] copy = new boolean[size][size];
         for (int i = 0; i < size; i++) {
@@ -148,6 +154,12 @@ public class Battle_royale {
         return copy;
     }
     
+    /**
+     * copy helper method for strings
+     * @param old parent array to be copied
+     * @param size size of the array
+     * @return child, copied array
+     */
     public static String[][] copyArrayS(String[][] old, int size) {
         String[][] copy = new String[size][size];
         for (int i = 0; i < size; i++) {
@@ -157,6 +169,7 @@ public class Battle_royale {
         }
         return copy;
     }
+    
     public static void main(String[] args) throws Exception{
         int size = 11;
         int max = size/2;
@@ -177,11 +190,12 @@ public class Battle_royale {
         }
         
         printA(map, size);
-        System.out.println();
-        System.out.println("The player collected " + path(map, 5, 5, size) + " piece(s) of loot");
-        printA(map, size);
         System.out.println("\n");
         System.out.println("P is at " + Arrays.toString(findP(map,size)));
         opPath(5,5,map,isVisited,size,"",max);
+        
+        //TODO:
+        // dont use magic numbers for opPath: adding 4.3
+        // store all paths to some data structure for loot checking
     }
 }
