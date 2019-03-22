@@ -3,6 +3,8 @@ import java.util.Scanner;
 import java.io.File;
 import java.util.Arrays;
 public class Battle_royale {
+    static String[] paths = new String[1000];
+    
     /**
      * prints the entire array
      * @param map the 2d array of the map
@@ -114,11 +116,7 @@ public class Battle_royale {
      */
     public static void opPath(int x, int y, String[][] map, boolean[][] isVisited, int size, String path, int max) {
         if (map[x][y].equals("P")) {
-            System.out.println(path + "4.3");
-            System.out.println("");
-            String[][] temp = copyArrayS(map, size);
-            setV(temp, path);
-            printA(temp, size);
+            paths[nextEmpty(paths)] = path + Integer.toString(findP(map, size)[0]) + "." + Integer.toString(findP(map, size)[1]);
         } else if (max > -1) {
             path += x + "." + y + " ";
             max--;
@@ -170,6 +168,42 @@ public class Battle_royale {
         return copy;
     }
     
+    public static String findOptimalPath(String[][] map, String[] arr) {
+        int loot = 0;
+        String[] coordinates = new String[map[0].length + 1];
+        String optimal = "";
+        for (int i = 0; i < arr.length && arr[i] != null; i++) {
+            int temp = 0;
+            coordinates = arr[i].split(" ");
+            for (int j = 0; j < coordinates.length; j++) {
+                temp += value(map,coordinates[j]);
+            }
+            if (temp > loot) {
+                loot = temp;
+                optimal = arr[i] + " " + loot;
+            }
+        }
+        return optimal;
+    }                                                
+    
+    public static int value(String[][] map, String coord) {
+        int x = Integer.parseInt(coord.substring(0,1));
+        int y = Integer.parseInt(coord.substring(2));
+        try {
+            return Integer.parseInt(map[x][y]);
+        } catch (Exception e) { //if its not a number
+            return 0;
+        }
+    }
+    
+    public static int nextEmpty(String[] list) {
+        for (int i = 0; i < list.length; i++) {
+            if (list[i] == null) {
+                return i;
+            }
+        }
+        return -1;
+    }
     public static void main(String[] args) throws Exception{
         int size = 11;
         int max = size/2;
@@ -192,10 +226,10 @@ public class Battle_royale {
         printA(map, size);
         System.out.println("\n");
         System.out.println("P is at " + Arrays.toString(findP(map,size)));
-        opPath(5,5,map,isVisited,size,"",max);
-        
+        opPath(max,max,map,isVisited,size,"",max);
+        String optimalPath = findOptimalPath(map, paths);
+        System.out.println(optimalPath);
         //TODO:
-        // dont use magic numbers for opPath: adding 4.3
-        // store all paths to some data structure for loot checking
+        //Set 1000 to something math
     }
 }
