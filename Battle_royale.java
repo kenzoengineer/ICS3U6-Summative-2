@@ -1,5 +1,4 @@
 package battle_royale;
-
 import java.util.Scanner;
 import java.io.File;
 import java.util.Arrays;
