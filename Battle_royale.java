@@ -1,14 +1,13 @@
 package Battle_royale;
 import java.util.Scanner;
 import java.io.File;
-import java.util.Arrays;
 public class Battle_royale {
     //size of the map
-    static final int size = 11;
+    static int size;
     //the maximum possible paths is 4 + ( 3 * max-1). The first move can go 4 directions, but the next ones can go a max of 3
-    static String[] paths = new String[4+(3*(size/2-1))];
-    static String[] bestPaths = new String[size*size];
-    static String[][] map = new String[size][size];
+    static String[] paths;
+    static String[] bestPaths;
+    static String[][] map;
     
     /**
      * prints the entire array
@@ -207,9 +206,28 @@ public class Battle_royale {
     }
     public static void main(String[] args){
         //initialize variables
-        int max = size/2;
+        int max = 0;
+        Scanner sc = new Scanner(System.in);
+        //ask for file name
+        System.out.println("What is the name of the file?");
+        String name = sc.next();
+        File file = new File(name);
+        //get size of map from file
+        try {
+            Scanner fileSize = new Scanner(file);
+            size = fileSize.nextLine().length() / 2 + 1;
+            max = size/2;
+            paths = new String[4+(3*(size/2-1))];
+            bestPaths = new String[size*size];
+            map = new String[size][size];
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        
+        //begin program to run through all locations, in order to find the best placement for P
         for (int k = 0; k < size; k++) {
             for (int l = 0; l < size; l++) {
+                //create an array to hold all visited values
                 boolean[][] isVisited = new boolean[size][size];
                 //fill boolean array with 'false'
                 for (int i = 0; i < size; i++) {
@@ -220,7 +238,6 @@ public class Battle_royale {
 
                 //file IO, scan to 2d array
                 try {
-                    File file = new File("map.txt");
                     Scanner fileIn = new Scanner(file);
                     for (int i = 0; i < size; i++) {
                         for (int j = 0; j < size; j++) {
@@ -248,7 +265,6 @@ public class Battle_royale {
                 } catch (Exception e) { //catch all exceptions
                     //print exceptions
                     System.out.println(e);
-                    e.printStackTrace();
                 }
             }
         }
