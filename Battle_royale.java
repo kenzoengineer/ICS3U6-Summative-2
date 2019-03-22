@@ -1,11 +1,14 @@
 package Battle_royale;
 import java.util.Scanner;
 import java.io.File;
+import java.util.Arrays;
 public class Battle_royale {
-    //public variables
+    //size of the map
     static final int size = 11;
     //the maximum possible paths is 4 + ( 3 * max-1). The first move can go 4 directions, but the next ones can go a max of 3
     static String[] paths = new String[4+(3*(size/2-1))];
+    static String[] bestPaths = new String[size*size];
+    static String[][] map = new String[size][size];
     
     /**
      * prints the entire array
@@ -40,49 +43,6 @@ public class Battle_royale {
     }
     
     /**
-     * shortest distance from the center to "P"
-     * @param map the size of the map
-     * @param x the current x value of the path
-     * @param y the current y value of the path
-     * @param size the size of the array
-     * @return the number of loot tiles collected
-     */
-    public static int path(String[][] map, int x, int y, int size) {
-        int pX = findP(map,size)[0];
-        int pY = findP(map,size)[1];
-        if (map[x][y].equals("P")) {
-            return 0;
-        } else {
-            //map[x][y] = "V";
-            if (x > pX) {
-                if (map[x-1][y].equals("1")) {
-                    return 1 + path(map,x-1,y,size);
-                } else {
-                    return path(map,x-1,y,size);
-                }
-            } else if (x < pX) {
-                if (map[x+1][y].equals("1")) {
-                    return 1 + path(map,x+1,y,size);
-                } else {
-                    return path(map,x+1,y,size);
-                }
-            } else if (y > pY) {
-                if (map[x][y-1].equals("1")) {
-                    return 1 + path(map,x,y-1,size);
-                } else {
-                    return path(map,x,y-1,size);
-                }
-            } else {
-                if (map[x][y+1].equals("1")) {
-                    return 1 + path(map,x,y+1,size);
-                } else {
-                    return path(map,x,y+1,size);
-                }
-            }
-        }
-    }
-    
-    /**
      * checks if the index has already been visited
      * @param x [x][] index
      * @param y [][y] index
@@ -102,7 +62,6 @@ public class Battle_royale {
         for (int i = 0; i < path.length() - 1; i += 4) {
             int x = Integer.parseInt(path.substring(i,i+1));
             int y = Integer.parseInt(path.substring(i+2,i+3));
-            if (!map[x][y].equals("P"))
             map[x][y] = "V";
         }
     }
@@ -122,7 +81,7 @@ public class Battle_royale {
         if (map[x][y].equals("P")) { //path is legal
             //adds path to an array of all possible paths
             paths[nextEmpty(paths)] = path + Integer.toString(findP(map, size)[0]) + "." + Integer.toString(findP(map, size)[1]);
-        } else if (max > 0) {
+        } else {
             //add current coordinate to the path
             path += x + "." + y + " ";
             //get the number at the location, corresponding to time taken AND value of loot
@@ -133,6 +92,10 @@ public class Battle_royale {
             }
             //decrement amount of moves left depending on the time taken
             max -= time;
+            //if the time limit was exceeded earlier, it will end this branch of recursion as the move is no longer legal
+            if (max < 0) {
+                return;
+            }
             //set current coordinate to visited
             isVisited[x][y] = true;
             //recursively go every possible direction (legal and not visited already)
@@ -215,7 +178,7 @@ public class Battle_royale {
      */
     public static int value(String[][] map, String coord) {
         int x = Integer.parseInt(coord.substring(0,1));
-        int y = Integer.parseInt(coord.substring(2));
+        int y = Integer.parseInt(coord.substring(coord.indexOf(".") + 1));
         try {
             return Integer.parseInt(map[x][y]);
         } catch (Exception e) { //if its not a number (P or . or F it's loot value is 0)
@@ -236,42 +199,75 @@ public class Battle_royale {
         }
         return -1;
     }
+    public static void clearArray(String[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = null;
+        }
+    }
     public static void main(String[] args){
         //initialize variables
         int max = size/2;
-        boolean[][] isVisited = new boolean[size][size];
-        //fill boolean array with 'false'
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                isVisited[i][j] = false;
+        for (int k = 0; k < size; k++) {
+            for (int l = 0; l < size; l++) {
+                boolean[][] isVisited = new boolean[size][size];
+                //fill boolean array with 'false'
+                for (int i = 0; i < size; i++) {
+                    for (int j = 0; j < size; j++) {
+                        isVisited[i][j] = false;
+                    }
+                }
+
+                //file IO, scan to 2d array
+                try {
+                File file = new File("map.txt");
+                Scanner fileIn = new Scanner(file);
+                for (int i = 0; i < size; i++) {
+                    for (int j = 0; j < size; j++) {
+                        map[i][j] = fileIn.next();
+                    }
+                }
+                
+                //if the current point is not a number, set the point to the player (cannot drop on loot)
+                if (map[k][l].equals(".") || map[k][l].equals("F")) {
+                    try {//set previous "P" to a "."
+                        map[findP(map, size)[0]][findP(map, size)[1]] = ".";
+                    } catch (Exception e) {//if there is no previous "P"
+                    }
+                    //set current position to "P"
+                    map[k][l] = "P";
+                    //find all paths
+                    opPath(max,max,map,isVisited,size,"",max);
+                    //set most optimal path as the "winner" of the current player position
+                    bestPaths[nextEmpty(bestPaths)] = findOptimalPath(map, paths);
+                    //clear array of paths to be used in next iteration
+                    clearArray(paths);
+                }
+                //int maxLoot = Integer.parseInt(optimalPath.substring(optimalPath.lastIndexOf(" ") + 1));
+                //TODO:
+                //Set 1000 to something math
+                } catch (Exception e) { //catch all exceptions
+                    //print exceptions
+                    System.out.println(e);
+                    e.printStackTrace();
+                }
             }
         }
-        
-        //file IO, scan to 
-        try {
-        File file = new File("map.txt");
-        Scanner fileIn = new Scanner(file);
-        String[][] map = new String[size][size];
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                map[i][j] = fileIn.next();
+        int maxLoot = 0;
+        String bestPath = "";
+        for (int i = 0; i < bestPaths.length; i++) {
+            try {
+                int loot = Integer.parseInt(bestPaths[i].substring(bestPaths[i].lastIndexOf(" ") + 1));
+                if (loot > maxLoot) {
+                    bestPath = bestPaths[i];
+                    maxLoot = loot;
+                }
+            } catch (Exception e) {//the item at the current index is "" or " " (invalid) so it skips it
             }
         }
-        
-        opPath(max,max,map,isVisited,size,"",max);
-        String optimalPath = findOptimalPath(map, paths);
-        int maxLoot = Integer.parseInt(optimalPath.substring(optimalPath.lastIndexOf(" ") + 1));
-        System.out.println("The max loot obtainable is " + maxLoot);
-        //create and print array with V as visited locations
-        String[][] withV = copyArrayS(map, size);
-        setV(withV, optimalPath.substring(0,optimalPath.lastIndexOf(" ")));
-        printA(withV, size);
-        //TODO:
-        //Set 1000 to something math
-        } catch (Exception e) { //catch all exceptions
-            //print exceptions
-            System.out.println(e);
-            System.out.println("Error!! Ending program");
-        }
+        System.out.println("The best starting location is " + bestPath.substring(bestPath.lastIndexOf(" ") - 3, bestPath.lastIndexOf(" ")));
+        System.out.println("It will yield " + maxLoot + " piece(s) of loot");
+        System.out.println("Below is a diagram of the path it takes");
+        setV(map, bestPath.substring(0,bestPath.lastIndexOf(" ")));
+        printA(map, size);
     }
 }
