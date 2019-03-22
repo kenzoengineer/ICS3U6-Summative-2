@@ -1,9 +1,11 @@
 package Battle_royale;
 import java.util.Scanner;
 import java.io.File;
-import java.util.Arrays;
 public class Battle_royale {
-    static String[] paths = new String[1000];
+    //public variables
+    static final int size = 11;
+    //the maximum possible paths is 4 + ( 3 * max-1). The first move can go 4 directions, but the next ones can go a max of 3
+    static String[] paths = new String[4+(3*(size/2-1))];
     
     /**
      * prints the entire array
@@ -100,6 +102,7 @@ public class Battle_royale {
         for (int i = 0; i < path.length() - 1; i += 4) {
             int x = Integer.parseInt(path.substring(i,i+1));
             int y = Integer.parseInt(path.substring(i+2,i+3));
+            if (!map[x][y].equals("P"))
             map[x][y] = "V";
         }
     }
@@ -115,12 +118,24 @@ public class Battle_royale {
      * @param max the maximum number of moves possible for the player to make, before the storm makes it impossible (floor(size/2))
      */
     public static void opPath(int x, int y, String[][] map, boolean[][] isVisited, int size, String path, int max) {
-        if (map[x][y].equals("P")) {
+        int time;
+        if (map[x][y].equals("P")) { //path is legal
+            //adds path to an array of all possible paths
             paths[nextEmpty(paths)] = path + Integer.toString(findP(map, size)[0]) + "." + Integer.toString(findP(map, size)[1]);
-        } else if (max > -1) {
+        } else if (max > 0) {
+            //add current coordinate to the path
             path += x + "." + y + " ";
-            max--;
+            //get the number at the location, corresponding to time taken AND value of loot
+            try {
+                time = Integer.parseInt(map[x][y]);
+            } catch (Exception e) { // the location was not a number, aka P or . or F, meaning its treated as time = 1
+                time = 1;
+            }
+            //decrement amount of moves left depending on the time taken
+            max -= time;
+            //set current coordinate to visited
             isVisited[x][y] = true;
+            //recursively go every possible direction (legal and not visited already)
             if (x + 1 < size && !isVisited[x+1][y]) {
                 opPath(x + 1, y, map, copyArrayB(isVisited, size), size, path, max);
             }
@@ -168,9 +183,15 @@ public class Battle_royale {
         return copy;
     }
     
+    /**
+     * selects best (most loot) path out of the array of all legal paths
+     * @param map the 2d array holding the map
+     * @param arr the array of paths
+     * @return a string containing the path coordinates AND the loot collected
+     */
     public static String findOptimalPath(String[][] map, String[] arr) {
         int loot = 0;
-        String[] coordinates = new String[map[0].length + 1];
+        String[] coordinates;
         String optimal = "";
         for (int i = 0; i < arr.length && arr[i] != null; i++) {
             int temp = 0;
@@ -186,16 +207,27 @@ public class Battle_royale {
         return optimal;
     }                                                
     
+    /**
+     * finds the loot value of the coordinate location on the map
+     * @param map a 2d array of the map
+     * @param coord a coordinate in the form "x.y"
+     * @return the integer value of the coordinate
+     */
     public static int value(String[][] map, String coord) {
         int x = Integer.parseInt(coord.substring(0,1));
         int y = Integer.parseInt(coord.substring(2));
         try {
             return Integer.parseInt(map[x][y]);
-        } catch (Exception e) { //if its not a number
+        } catch (Exception e) { //if its not a number (P or . or F it's loot value is 0)
             return 0;
         }
     }
     
+    /**
+     * helper method to find the next empty space in an array because I can't use array lists or stacks or queues :((((
+     * @param list the array containing all legal paths
+     * @return the index of the next empty space
+     */
     public static int nextEmpty(String[] list) {
         for (int i = 0; i < list.length; i++) {
             if (list[i] == null) {
@@ -204,16 +236,19 @@ public class Battle_royale {
         }
         return -1;
     }
-    public static void main(String[] args) throws Exception{
-        int size = 11;
+    public static void main(String[] args){
+        //initialize variables
         int max = size/2;
         boolean[][] isVisited = new boolean[size][size];
+        //fill boolean array with 'false'
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 isVisited[i][j] = false;
             }
         }
         
+        //file IO, scan to 
+        try {
         File file = new File("map.txt");
         Scanner fileIn = new Scanner(file);
         String[][] map = new String[size][size];
@@ -223,13 +258,20 @@ public class Battle_royale {
             }
         }
         
-        printA(map, size);
-        System.out.println("\n");
-        System.out.println("P is at " + Arrays.toString(findP(map,size)));
         opPath(max,max,map,isVisited,size,"",max);
         String optimalPath = findOptimalPath(map, paths);
-        System.out.println(optimalPath);
+        int maxLoot = Integer.parseInt(optimalPath.substring(optimalPath.lastIndexOf(" ") + 1));
+        System.out.println("The max loot obtainable is " + maxLoot);
+        //create and print array with V as visited locations
+        String[][] withV = copyArrayS(map, size);
+        setV(withV, optimalPath.substring(0,optimalPath.lastIndexOf(" ")));
+        printA(withV, size);
         //TODO:
         //Set 1000 to something math
+        } catch (Exception e) { //catch all exceptions
+            //print exceptions
+            System.out.println(e);
+            System.out.println("Error!! Ending program");
+        }
     }
 }
