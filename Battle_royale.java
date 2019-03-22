@@ -1,4 +1,4 @@
-package battle_royale;
+package Battle_royale;
 import java.util.Scanner;
 import java.io.File;
 import java.util.Arrays;
@@ -49,7 +49,7 @@ public class Battle_royale {
         if (map[x][y].equals("P")) {
             return 0;
         } else {
-            map[x][y] = "V";
+            //map[x][y] = "V";
             if (x > pX) {
                 if (map[x-1][y].equals("1")) {
                     return 1 + path(map,x-1,y,size);
@@ -113,29 +113,50 @@ public class Battle_royale {
      * @param max the maximum number of moves possible for the player to make, before the storm makes it impossible (floor(size/2))
      */
     public static void opPath(int x, int y, String[][] map, boolean[][] isVisited, int size, String path, int max) {
-        if (map[x][y].equals("P")) { // prints anytime it finds a path of length 5 without checking if it actually leads to the player
-            System.out.println(path);
+        if (map[x][y].equals("P")) {
+            System.out.println(path + "4.3");
             System.out.println("");
-            //setV(map,path);
+            String[][] temp = copyArrayS(map, size);
+            setV(temp, path);
+            printA(temp, size);
         } else if (max > -1) {
             path += x + "." + y + " ";
             max--;
             isVisited[x][y] = true;
             if (x + 1 < size && !isVisited[x+1][y]) {
-                opPath(x + 1, y, map, isVisited, size, path, max);
+                opPath(x + 1, y, map, copyArrayB(isVisited, size), size, path, max);
             }
             if (x - 1 >= 0 && !isVisited[x-1][y]) {
-                opPath(x - 1, y, map, isVisited, size, path, max);
+                opPath(x - 1, y, map, copyArrayB(isVisited, size), size, path, max);
             }
             if (y + 1 < size && !isVisited[x][y+1]) {
-                opPath(x, y + 1, map, isVisited, size, path, max);
+                opPath(x, y + 1, map, copyArrayB(isVisited, size), size, path, max);
             }
             if (y - 1 >= 0 && !isVisited[x][y-1]) {
-                opPath(x, y - 1, map, isVisited, size, path, max);
+                opPath(x, y - 1, map, copyArrayB(isVisited, size), size, path, max);
             }
         }
     }
     
+    public static boolean[][] copyArrayB(boolean[][] old, int size) {
+        boolean[][] copy = new boolean[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                copy[i][j] = old[i][j];
+            }
+        }
+        return copy;
+    }
+    
+    public static String[][] copyArrayS(String[][] old, int size) {
+        String[][] copy = new String[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                copy[i][j] = old[i][j];
+            }
+        }
+        return copy;
+    }
     public static void main(String[] args) throws Exception{
         int size = 11;
         int max = size/2;
