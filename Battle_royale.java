@@ -1,6 +1,7 @@
 package Battle_royale;
 import java.util.Scanner;
 import java.io.File;
+import java.util.Arrays;
 public class Battle_royale {
     //size of the map
     static int size;
@@ -58,12 +59,12 @@ public class Battle_royale {
      * @param path the string containing the coordinates of the path
      */
     public static void setV(String[][] map, String path) {
-        for (int i = 0; i < path.length() - 1; i += 4) {
-            int x = Integer.parseInt(path.substring(i,i+1));
-            int y = Integer.parseInt(path.substring(i+2,i+3));
-            if (x == Integer.parseInt(path.substring((path.lastIndexOf(".")-1),path.lastIndexOf("."))) && y == Integer.parseInt(path.substring((path.lastIndexOf(".")+1),path.lastIndexOf(".")+2))) {
-                map[x][y] = "P";
-            } else if (x == (map[0].length / 2) && y == (map[0].length / 2)) {
+        String[] arr = path.split(" ");
+            map[Integer.parseInt(arr[arr.length-1].substring(0,arr[arr.length-1].indexOf(".")))][Integer.parseInt(arr[arr.length-1].substring(arr[arr.length-1].indexOf(".") + 1))] = "P";
+        for (int i = 0; i < arr.length - 1; i++) {
+            int x = Integer.parseInt(arr[i].substring(0,arr[i].indexOf(".")));
+            int y = Integer.parseInt(arr[i].substring(arr[i].indexOf(".") + 1));
+            if (map[x][y].equals("F")) {
                 map[x][y] = "F";
             } else {
                 map[x][y] = "V";
@@ -90,10 +91,10 @@ public class Battle_royale {
             //add current coordinate to the path
             path += x + "." + y + " ";
             //get the number at the location, corresponding to time taken AND value of loot
-            try {
-                time = Integer.parseInt(map[x][y]);
-            } catch (Exception e) { // the location was not a number, aka P or . or F, meaning its treated as time = 1
+            if (map[x][y].equals("P") || map[x][y].equals(".") || map[x][y].equals("F")) {
                 time = 1;
+            } else {
+                time = Integer.parseInt(map[x][y]);
             }
             //decrement amount of moves left depending on the time taken
             max -= time;
@@ -167,6 +168,7 @@ public class Battle_royale {
             for (int j = 0; j < coordinates.length; j++) {
                 temp += value(map,coordinates[j]);
             }
+            
             if (temp >= loot) {
                 loot = temp;
                 optimal = arr[i] + " " + loot;
@@ -182,12 +184,12 @@ public class Battle_royale {
      * @return the integer value of the coordinate
      */
     public static int value(String[][] map, String coord) {
-        int x = Integer.parseInt(coord.substring(0,1));
+        int x = Integer.parseInt(coord.substring(0,coord.indexOf(".")));
         int y = Integer.parseInt(coord.substring(coord.indexOf(".") + 1));
-        try {
-            return Integer.parseInt(map[x][y]);
-        } catch (Exception e) { //if its not a number (P or . or F it's loot value is 0)
+        if (map[x][y].equals("P") || map[x][y].equals(".") || map[x][y].equals("F")) {
             return 0;
+        } else {
+            return Integer.parseInt(map[x][y]);
         }
     }
     
@@ -204,6 +206,7 @@ public class Battle_royale {
         }
         return -1;
     }
+    
     public static void main(String[] args){
         //initialize variables
         int max = 0;
@@ -220,6 +223,7 @@ public class Battle_royale {
             paths = new String[4+(3*(size/2-1))];
             bestPaths = new String[size*size];
             map = new String[size][size];
+            fileSize.close();
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -247,9 +251,9 @@ public class Battle_royale {
 
                     //if the current point is not a number, set the point to the player (cannot drop on loot)
                     if (map[k][l].equals(".") || map[k][l].equals("F")) {
-                        try {//set previous "P" to a "."
+                        //set previous "P" to "."
+                        if (findP(map, size) != null) {
                             map[findP(map, size)[0]][findP(map, size)[1]] = ".";
-                        } catch (Exception e) {//if there is no previous "P"
                         }
                         //set current position to "P"
                         map[k][l] = "P";
@@ -271,13 +275,12 @@ public class Battle_royale {
         int maxLoot = 0;
         String bestPath = "";
         for (int i = 0; i < bestPaths.length; i++) {
-            try {
-                int loot = Integer.parseInt(bestPaths[i].substring(bestPaths[i].lastIndexOf(" ") + 1));
-                if (loot >= maxLoot) {
+            if (bestPaths[i] != null && bestPaths[i].length() > 1) {
+                String lootString = bestPaths[i].substring(bestPaths[i].lastIndexOf(" ") + 1);
+                if (!lootString.equals("") && !lootString.equals(" ") && Integer.parseInt(lootString) >= maxLoot) {
+                    maxLoot = Integer.parseInt(lootString);
                     bestPath = bestPaths[i];
-                    maxLoot = loot;
                 }
-            } catch (Exception e) {//the item at the current index is "" or " " (invalid) so it skips it
             }
         }
         System.out.println("The best starting location is " + bestPath.substring(bestPath.lastIndexOf(" ") - 3, bestPath.lastIndexOf(" ")));
