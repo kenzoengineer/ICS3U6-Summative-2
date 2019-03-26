@@ -1,13 +1,14 @@
 package Battle_royale;
 import java.util.Scanner;
 import java.io.File;
-import java.util.Arrays;
 public class Battle_royale {
     //size of the map
     static int size;
-    //the maximum possible paths is 4 + ( 3 * max-1). The first move can go 4 directions, but the next ones can go a max of 3
+    //holds all possible paths for 1 position of P
     static String[] paths;
+    //holds the best paths from all positions of P
     static String[] bestPaths;
+    //holds a 2d array of the map
     static String[][] map;
     
     /**
@@ -64,7 +65,7 @@ public class Battle_royale {
         for (int i = 0; i < arr.length - 1; i++) {
             int x = Integer.parseInt(arr[i].substring(0,arr[i].indexOf(".")));
             int y = Integer.parseInt(arr[i].substring(arr[i].indexOf(".") + 1));
-            if (map[x][y].equals("F")) {
+            if (x == size/2 && y == size/2) {
                 map[x][y] = "F";
             } else {
                 map[x][y] = "V";
@@ -196,7 +197,7 @@ public class Battle_royale {
     /**
      * helper method to find the next empty space in an array because I can't use array lists or stacks or queues :((((
      * @param list the array containing all legal paths
-     * @return the index of the next empty space
+     * @return the index of the next empty space, -1 if it doesn't exist
      */
     public static int nextEmpty(String[] list) {
         for (int i = 0; i < list.length; i++) {
@@ -215,12 +216,14 @@ public class Battle_royale {
         System.out.println("What is the name of the file?");
         String name = sc.next();
         File file = new File(name);
+        
         //get size of map from file
         try {
             Scanner fileSize = new Scanner(file);
             size = fileSize.nextLine().length() / 2 + 1;
             max = size/2;
-            paths = new String[4+(3*(size/2-1))];
+            //paths = new String[4+(3*(size/2-1))];
+            paths = new String[1000];
             bestPaths = new String[size*size];
             map = new String[size][size];
             fileSize.close();
@@ -272,6 +275,7 @@ public class Battle_royale {
                 }
             }
         }
+        //find the path with the best loot
         int maxLoot = 0;
         String bestPath = "";
         for (int i = 0; i < bestPaths.length; i++) {
@@ -283,7 +287,15 @@ public class Battle_royale {
                 }
             }
         }
-        System.out.println("The best starting location is " + bestPath.substring(bestPath.lastIndexOf(" ") - 3, bestPath.lastIndexOf(" ")));
+        
+        //Remove the final "P"
+        if (findP(map, size) != null) {
+            map[findP(map, size)[0]][findP(map, size)[1]] = ".";
+        }
+        //Find starting coordinate
+        String startCoord = bestPath.substring(0,bestPath.lastIndexOf(" "));
+        //Output starting location, loot and map
+        System.out.println("The best starting location is" + startCoord.substring(startCoord.lastIndexOf(" ")));
         System.out.println("It will yield " + maxLoot + " piece(s) of loot");
         System.out.println("Below is a diagram of the path it takes");
         setV(map, bestPath.substring(0,bestPath.lastIndexOf(" ")));
