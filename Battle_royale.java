@@ -1,4 +1,4 @@
-package Battle_royale;
+package battle_royale;
 import java.util.Scanner;
 import java.io.File;
 public class Battle_royale {
@@ -203,6 +203,8 @@ public class Battle_royale {
         for (int i = 0; i < list.length; i++) {
             if (list[i] == null) {
                 return i;
+            } else if (list[i].length() <= 1) {
+                return i;
             }
         }
         return -1;
@@ -223,13 +225,15 @@ public class Battle_royale {
             size = fileSize.nextLine().length() / 2 + 1;
             max = size/2;
             //paths = new String[4+(3*(size/2-1))];
-            paths = new String[1000];
+            paths = new String[100000];
             bestPaths = new String[size*size];
             map = new String[size][size];
             fileSize.close();
         } catch (Exception e) {
             System.out.println(e);
         }
+        
+        long startT = System.nanoTime();
         
         //begin program to run through all locations, in order to find the best placement for P
         for (int k = 0; k < size; k++) {
@@ -292,6 +296,9 @@ public class Battle_royale {
         if (findP(map, size) != null) {
             map[findP(map, size)[0]][findP(map, size)[1]] = ".";
         }
+        
+        long endT = System.nanoTime();
+        
         //Find starting coordinate
         String startCoord = bestPath.substring(0,bestPath.lastIndexOf(" "));
         //Output starting location, loot and map
@@ -300,5 +307,6 @@ public class Battle_royale {
         System.out.println("Below is a diagram of the path it takes");
         setV(map, bestPath.substring(0,bestPath.lastIndexOf(" ")));
         printA(map, size);
+        System.out.println((endT - startT)/1000000000.0);
     }
 }
