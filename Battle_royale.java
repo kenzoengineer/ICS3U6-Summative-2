@@ -1,7 +1,6 @@
-package Battle_royale;
+package battle_royale;
 import java.util.Scanner;
 import java.io.File;
-import java.util.Arrays;
 public class Battle_royale {
     //size of the map
     static int size;
@@ -195,22 +194,28 @@ public class Battle_royale {
         //get size of map from file
         try {
             Scanner fileSize = new Scanner(file);
+            Scanner fileIn = new Scanner(file);
             size = fileSize.nextLine().length() / 2 + 1;
-            max = size/2;
-            //paths = new String[4+(3*(size/2-1))];
-            paths = new String[100000];
-            bestPaths = new String[size*size];
             map = new String[size][size];
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    map[i][j] = fileIn.next();
+                }
+            }
+            fileIn.close();
             fileSize.close();
         } catch (Exception e) {
             System.out.println(e);
         }
-        
+        max = size/2;
+        paths = new String[100000];
+        bestPaths = new String[size*size];
         long startT = System.nanoTime();
         
         //begin program to run through all locations, in order to find the best placement for P
         for (int k = 0; k < size; k++) {
             for (int l = 0; l < size; l++) {
+                System.out.println(k + "," + l);
                 //create an array to hold all looted values
                 boolean[][] looted = new boolean[size][size];
                 //fill boolean array with 'false'
@@ -219,37 +224,22 @@ public class Battle_royale {
                         looted[i][j] = false;
                     }
                 }
-
-                //file IO, scan to 2d array
-                try {
-                    Scanner fileIn = new Scanner(file);
-                    for (int i = 0; i < size; i++) {
-                        for (int j = 0; j < size; j++) {
-                            map[i][j] = fileIn.next();
-                        }
+                //if the current point is not a number, set the point to the player (cannot drop on loot)
+                if (map[k][l].equals(".") || map[k][l].equals("F")) {
+                    //set previous "P" to "."
+                    if (findP(map, size) != null) {
+                        map[findP(map, size)[0]][findP(map, size)[1]] = ".";
                     }
-
-                    //if the current point is not a number, set the point to the player (cannot drop on loot)
-                    if (map[k][l].equals(".") || map[k][l].equals("F")) {
-                        //set previous "P" to "."
-                        if (findP(map, size) != null) {
-                            map[findP(map, size)[0]][findP(map, size)[1]] = ".";
-                        }
-                        //set current position to "P"
-                        map[k][l] = "P";
-                        //find all paths
-                        opPath(max,max,map,looted,size,"",max,0);
-                        //set most optimal path as the "winner" of the current player position
-                        bestPaths[nextEmpty(bestPaths)] = findOptimalPath(paths);
-                        //clear array of paths to be used in next iteration
-                        for (int i = 0; i < paths.length; i++) {
-                            paths[i] = null;
-                        }
+                    //set current position to "P"
+                    map[k][l] = "P";
+                    //find all paths
+                    opPath(max,max,map,looted,size,"",max,0);
+                    //set most optimal path as the "winner" of the current player position
+                    bestPaths[nextEmpty(bestPaths)] = findOptimalPath(paths);
+                    //clear array of paths to be used in next iteration
+                    for (int i = 0; i < paths.length; i++) {
+                        paths[i] = null;
                     }
-                } catch (Exception e) { //catch all exceptions
-                    //print exceptions
-                    e.printStackTrace();
-                    
                 }
             }
         }
@@ -265,6 +255,6 @@ public class Battle_royale {
         }
         System.out.println(bestPath);
         long endT = System.nanoTime();
-        System.out.println(endT - startT / 1000000000);
+        System.out.println((endT - startT) / 1000000000.0);
     }
 }
