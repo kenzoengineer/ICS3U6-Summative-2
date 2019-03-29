@@ -48,9 +48,9 @@ public class Battle_royale {
      * @param map the 2d array of the map
      * @param path the string containing the coordinates of the path
      */
-    public static void setV(String[][] map, String path) {
+    public static void setV(String[][] map, String path, String start) {
         String[] arr = path.split(" ");
-            map[Integer.parseInt(arr[arr.length-1].substring(0,arr[arr.length-1].indexOf(",")))][Integer.parseInt(arr[arr.length-1].substring(arr[arr.length-1].indexOf(",") + 1))] = "P";
+        map[Integer.parseInt(start.substring(0,start.indexOf(",")))][Integer.parseInt(start.substring(start.indexOf(",") + 1))] = "P";
         for (int i = 0; i < arr.length - 1; i++) {
             int x = Integer.parseInt(arr[i].substring(0,arr[i].indexOf(",")));
             int y = Integer.parseInt(arr[i].substring(arr[i].indexOf(",") + 1));
@@ -76,7 +76,7 @@ public class Battle_royale {
         int time;
         if (map[x][y].equals("P")) { //path is legal
             //adds path to an array of all possible paths
-            paths[nextEmpty(paths)] = path + "#" + loot;
+            paths[nextEmpty(paths)] = path + x + "," + y + " #" + loot;
         } else {
             //add current coordinate to the path
             path += x + "," + y + " ";
@@ -215,17 +215,17 @@ public class Battle_royale {
         //begin program to run through all locations, in order to find the best placement for P
         for (int k = 0; k < size; k++) {
             for (int l = 0; l < size; l++) {
-                System.out.println(k + "," + l);
-                //create an array to hold all looted values
-                boolean[][] looted = new boolean[size][size];
-                //fill boolean array with 'false'
-                for (int i = 0; i < size; i++) {
-                    for (int j = 0; j < size; j++) {
-                        looted[i][j] = false;
-                    }
-                }
                 //if the current point is not a number, set the point to the player (cannot drop on loot)
-                if (map[k][l].equals(".") || map[k][l].equals("F")) {
+                if ((map[k][l].equals(".") || map[k][l].equals("F")) && (Math.abs(k-max)+Math.abs(l-max)) <= max) {
+                    System.out.println(k + " " + l);
+                    //create an array to hold all looted values
+                    boolean[][] looted = new boolean[size][size];
+                    //fill boolean array with 'false'
+                    for (int i = 0; i < size; i++) {
+                        for (int j = 0; j < size; j++) {
+                            looted[i][j] = false;
+                        }
+                    }
                     //set previous "P" to "."
                     if (findP(map, size) != null) {
                         map[findP(map, size)[0]][findP(map, size)[1]] = ".";
@@ -244,7 +244,7 @@ public class Battle_royale {
             }
         }
         //find which path is the best
-        int mostLoot = 0;
+        int mostLoot = -1;
         String bestPath = "";
         for (int i = 0; i < nextEmpty(bestPaths); i++) {
             int loot = Integer.parseInt(bestPaths[i].substring(bestPaths[i].indexOf("#") + 1));
@@ -253,8 +253,18 @@ public class Battle_royale {
                 bestPath = bestPaths[i];
             }
         }
-        System.out.println(bestPath);
-        long endT = System.nanoTime();
-        System.out.println((endT - startT) / 1000000000.0);
+        if (bestPath.length() > 1) {
+            if (findP(map, size) != null) {
+                map[findP(map, size)[0]][findP(map, size)[1]] = ".";
+            }
+            String[] arr = bestPath.split(" ");
+            System.out.println("The best starting location is " + arr[arr.length - 2]);
+            long endT = System.nanoTime();
+            System.out.println("This program took " + (endT - startT) / 1000000000.0 + " s");
+            setV(map, bestPath.substring(0,bestPath.indexOf("#")), arr[arr.length - 2]);
+            printA(map, size);
+        } else {
+            System.out.println("There are no possible paths. you doomed lol");
+        }
     }
 }
