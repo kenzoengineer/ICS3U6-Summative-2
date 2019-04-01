@@ -78,6 +78,7 @@ public class Battle_royale {
             //adds path to an array of all possible paths
             paths[nextEmpty(paths)] = path + x + "," + y + " #" + loot;
         } else {
+            if (!isPossible(x, y, max)) return;
             //add current coordinate to the path
             path += x + "," + y + " ";
             //get the number at the location, corresponding to time taken AND value of loot
@@ -145,6 +146,13 @@ public class Battle_royale {
         return copy;
     }
     
+    public static boolean isPossible(int x, int y,int max) {
+        //find location of player
+        int pX = findP(map,size)[0];
+        int pY = findP(map,size)[1];
+        return Math.abs(pX-x) + Math.abs(pY-y) <= max;
+    }
+    
     /**
      * selects best (most loot) path out of the array of all legal paths
      * @param map the 2d array holding the map
@@ -158,7 +166,7 @@ public class Battle_royale {
         for (int i = 0; i < arr.length && arr[i] != null; i++) {
             hash = arr[i].indexOf("#");
             int temp = Integer.parseInt(arr[i].substring(hash + 1));
-            if (temp > loot) {
+            if (temp >= loot) {
                 loot = temp;
                 path = arr[i] + "";
             }
@@ -208,7 +216,7 @@ public class Battle_royale {
             System.out.println(e);
         }
         max = size/2;
-        paths = new String[100000];
+        paths = new String[1000000];
         bestPaths = new String[size*size];
         long startT = System.nanoTime();
         
@@ -217,7 +225,6 @@ public class Battle_royale {
             for (int l = 0; l < size; l++) {
                 //if the current point is not a number, set the point to the player (cannot drop on loot)
                 if ((map[k][l].equals(".") || map[k][l].equals("F")) && (Math.abs(k-max)+Math.abs(l-max)) <= max) {
-                    System.out.println(k + " " + l);
                     //create an array to hold all looted values
                     boolean[][] looted = new boolean[size][size];
                     //fill boolean array with 'false'
@@ -259,12 +266,13 @@ public class Battle_royale {
             }
             String[] arr = bestPath.split(" ");
             System.out.println("The best starting location is " + arr[arr.length - 2]);
+            System.out.println("The maximum amount of loot obtainable is " + bestPath.substring(bestPath.indexOf("#") + 1));
             long endT = System.nanoTime();
             System.out.println("This program took " + (endT - startT) / 1000000000.0 + " s");
             setV(map, bestPath.substring(0,bestPath.indexOf("#")), arr[arr.length - 2]);
             printA(map, size);
         } else {
-            System.out.println("There are no possible paths. you doomed lol");
+            System.out.println("There are no possible paths. you are doomed.");
         }
     }
 }
