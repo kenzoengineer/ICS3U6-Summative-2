@@ -231,7 +231,7 @@ public class BattleRoyale {
         } catch (Exception e) {
             System.out.println(e);
         }
-        //maximum amount of moves before the map closes
+        //maximum amount of moves before the map closes, also the location of the center
         max = size/2;
         //holds the current best path
         String currentBest = "#-1";
